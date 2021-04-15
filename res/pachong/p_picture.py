@@ -1,5 +1,4 @@
 
-# 增加header
 import requests
 import base64
 import os
