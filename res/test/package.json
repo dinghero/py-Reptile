@@ -1,0 +1,11 @@
+{
+    "args":[
+      {
+        "url" : "http://m.win4000.com/meitu_29_",
+        "pages" : 6,
+        "starpages" : 1,
+        "path" : "E:/picture/",
+        "log" : "MKPicture.log"
+      }
+    ]
+}
