@@ -1,7 +1,5 @@
 
 import requests
-import base64
-import os
 import time
 import re
 from res.pachong.util_AES import aesDecrypt
