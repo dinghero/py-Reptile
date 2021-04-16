@@ -1,11 +1,12 @@
 
-import requests
-import time
+
 import re
 
 from res.ppmh.p_picture import paqu
-from res.ppmh.util_AES import aesDecrypt
-from res.sql.linkMysql import insertsql, selectsql
+from res.ppmh.request_html import load_url
+
+from res.sql.linkMysql import selectsql
+
 imglist = ['LmpwZw==', '5qcGc=']
 picture_ids = ['x', 'y', 'z', '0', '1', '2', '3', '4', '5',
                'xMC', 'xMS', 'xMi', 'xMy', 'xNC', 'xNS', 'xNi', 'xNy', 'xOC', 'xOS',
@@ -17,42 +18,45 @@ picture_ids = ['x', 'y', 'z', '0', '1', '2', '3', '4', '5',
                '3MC', '3MS', '3Mi', '3My', '3NC', '3NS', '3Ni', '3Ny', '3OC', '3OS'
                ]
 
-headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
-    }
-
 baseurl ='https://0715ch.com/'
 picUrl = 'https://0715ch.com/'
 
 
+def carwing_content(start, cartoon_id):
+    sql = 'SELECT c.chapter_id, chapter_name, chapter_url, ct.cartoon_name from chapter c LEFT JOIN cartoon_title ct on ct.cartoon_id = c.cartoon_id where c.chapter_sort >= '\
+          +str(start)+' and c.cartoon_id = '+cartoon_id+' ORDER BY chapter_sort'
+    list = selectsql(sql)
+    for item in list:
+        cartoon_name = item[3]
+        chapter_id = item[0]
+        chapter_name = item[1].replace('?', '')
+        url = baseurl + item[2]
+        html = load_url(url)
+        title_pattern = r'L2ZpbGV.{20}'
+        link = re.search(title_pattern, html).group()
+        tag = True
+        i = 0
+        while i < len(picture_ids):
+            if i > 8:
+                param = 'deimgtxtimg.js?txtimg=' + link + picture_ids[i] + imglist[1] + '&lid=' + str(i)
+            else:
+                param = 'deimgtxtimg.js?txtimg=' + link + picture_ids[i] + imglist[0] + '&lid=' + str(i)
+            insertSql = 'insert into content (content_url,content_sort,chapter_id) value (\'' + param + '\', ' + str(
+                i + 1) + ', ' + str(chapter_id) + ')'
+            tag = paqu(picUrl + param, 'E:/漫画/' + cartoon_name + "/" + chapter_name, str(i), tag, insertSql)
+            # insertsql(insertSql)
+            if not tag:
+                print('------------------第%d集完成：共%d页--------------' % (start, i))
+                break
+            i += 1
+            print('第%d集：第%d页完成' % (start, i))
+        start += 1
 
-sql = 'SELECT c.chapter_id,chapter_name,chapter_url,ct.cartoon_name from chapter c LEFT JOIN cartoon_title ct on ct.cartoon_id = c.cartoon_id where c.chapter_sort > 0 and c.cartoon_id = 5 ORDER BY chapter_sort'
-list = selectsql(sql)
-start = 1
-for item in list:
-    cartoon_name = item[3]
-    chapter_id = item[0]
-    chapter_name = item[1].replace('?', '')
-    url = baseurl + item[2]
-    reponse = requests.get(url, headers=headers)
-    time.sleep(1)
-    html = reponse.content.decode("utf-8", errors="ignore")
-    title_pattern = r'L2ZpbGV.{20}'
-    link = re.search(title_pattern, html).group()
-    tag = True
-    i = 0
-    while i < len(picture_ids):
-        if i > 8:
-            param = 'deimgtxtimg.js?txtimg=' + link + picture_ids[i] + imglist[1] + '&lid=' + str(i)
-        else:
-            param = 'deimgtxtimg.js?txtimg=' + link + picture_ids[i] + imglist[0] + '&lid=' + str(i)
-        insertSql = 'insert into content (content_url,content_sort,chapter_id) value (\'' + param + '\', ' + str(i+1) + ', ' + str(chapter_id) + ')'
-        tag = paqu(picUrl+param, 'E:/漫画/'+cartoon_name+"/"+chapter_name, str(i), tag, insertSql)
-        # insertsql(insertSql)
-        if not tag:
-            print('------------------第%d集完成：共%d页--------------' % (start, i))
-            break
-        i += 1
-        print('第%d集：第%d页完成' % (start, i))
-    start += 1
 
+
+if __name__ == '__main__':
+    #漫画id
+    cartoonId = str(30)
+    # 从第 start 章节开始
+    chapterStart = 1
+    carwing_content(chapterStart, cartoonId)
