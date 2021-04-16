@@ -3,8 +3,8 @@ import requests
 import time
 import re
 
-from res.pachong.p_picture import paqu
-from res.pachong.util_AES import aesDecrypt
+from res.ppmh.p_picture import paqu
+from res.ppmh.util_AES import aesDecrypt
 from res.sql.linkMysql import insertsql, selectsql
 imglist = ['LmpwZw==', '5qcGc=']
 picture_ids = ['x', 'y', 'z', '0', '1', '2', '3', '4', '5',
