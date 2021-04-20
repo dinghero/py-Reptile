@@ -25,6 +25,5 @@ def paqu(url, filepath, name, tag, insertSql ):
         os.makedirs(filepath)
     with open(filepath+'/'+name + '.png', 'wb') as f:
         f.write(base64.b64decode(img))
-        # insertSql = insertSql + '\'' + img + '\')'
         insertsql(insertSql)
     return tag
